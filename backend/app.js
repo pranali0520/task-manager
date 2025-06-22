@@ -2,29 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
-
+const db = require("./connection");
+const Task = require("./model");
 app.use(cors());
 app.use(express.json());
-
-// mongodb connection
-mongoose
-  .connect("mongodb://localhost/task")
-  .then(() => {
-    console.log("mongodb connected sucessfully");
-  })
-  .catch((e) => {
-    console.log(e);
-  });
-
-//task schema
-const taskSchema = new mongoose.Schema({
-  Title: String,
-  Description: String,
-  AssignedTo: String,
-  Status: String,
-});
-
-const Task = mongoose.model("Task", taskSchema);
 
 app.get("/task", async (req, res) => {
   const allTask = await Task.find();
@@ -41,9 +22,14 @@ app.post("/task", async (req, res) => {
   res.json({ msg: "Task Added successfully..", newTask });
 });
 app.put("/task/:id", async (req, res) => {
-  const selectTask = await Task.findByIdAndUpdate(req.params.id);
-  selectTask.Status = req.body.Status;
-  res.json({ msg: "Task Updated successfully..", selectTask });
+  const { Title, Description, AssignedTo, Status } = req.body;
+  const updatedTask = await Task.findByIdAndUpdate(req.params.id, {
+    Title,
+    Description,
+    AssignedTo,
+    Status,
+  });
+  res.json({ msg: "Task Updated successfully..", updatedTask });
 });
 app.delete("/task/:id", async (req, res) => {
   const selectTask = await Task.findByIdAndDelete(req.params.id);
